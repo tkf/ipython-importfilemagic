@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 
 from IPython.core.magic import Magics, magics_class, line_magic
 from IPython.core.magic_arguments import (argument, magic_arguments,
@@ -16,6 +17,8 @@ class ImportFileMagic(Magics):
               help='reload module')
     @argument('--star', '-s', default=False, action='store_true',
               help='do "from modeule import *"')
+    @argument('--verbose', '-v', default=False, action='store_true',
+              help='print the commands to be executed')
     @line_magic
     def importfile(self, parameter_s=''):
         """
@@ -57,22 +60,34 @@ class ImportFileMagic(Magics):
         if args.star:
             commands.append("from {0} import *".format(modulepath))
         code = "\n".join(commands)
-        print code
+        if args.verbose:
+            print code
 
         with prepended_to_syspath(rootpath):
             self.shell.ex(code)
 
-    @staticmethod
-    def _method_sys_path(abspath):
+    _valid_module_re = re.compile(r'^[a-zA-z_][0-9a-zA-Z_]*$')
+
+    @classmethod
+    def _is_vaild_root(cls, abspath, rootpath):
+        """
+        Test if relpath of `abspath` from `rootpath` is a valid module path.
+        """
+        test = cls._valid_module_re.match
+        return all(test(d) for d in
+                   os.path.relpath(abspath, rootpath).split(os.path.sep))
+
+    @classmethod
+    def _method_sys_path(cls, abspath):
         matches = []
         for p in filter(lambda x: x, sys.path):
-            if abspath.startswith(p):
+            if abspath.startswith(p) and cls._is_vaild_root(abspath, p):
                 matches.append(p)
         if matches:
             return sorted(matches)[-1]  # longest match
 
-    @staticmethod
-    def _method_init(abspath):
+    @classmethod
+    def _method_init(cls, abspath):
         cwd = os.getcwd()
         if not abspath.startswith(cwd):
             return
@@ -82,15 +97,17 @@ class ImportFileMagic(Magics):
                     os.path.join(os.path.join(cwd, *subdirs), '__init__.py')):
                 return
             subdirs.pop()
-        return cwd
+        if cls._is_vaild_root(abspath, cwd):
+            return cwd
 
-    @staticmethod
-    def _method_setup_py(abspath):
+    @classmethod
+    def _method_setup_py(cls, abspath):
         dirs = abspath.split(os.path.sep)
         while len(dirs) > 1:
             dirs.pop()
             rootpath = os.path.sep.join(dirs)
-            if os.path.exists(os.path.join(rootpath, 'setup.py')):
+            if (os.path.exists(os.path.join(rootpath, 'setup.py')) and
+                cls._is_vaild_root(abspath, rootpath)):
                 return rootpath
 
     _method_stand_alone = staticmethod(os.path.dirname)
