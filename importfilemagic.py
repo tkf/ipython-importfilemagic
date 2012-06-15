@@ -68,6 +68,17 @@ class ImportFileMagic(Magics):
 
     _valid_module_re = re.compile(r'^[a-zA-z_][0-9a-zA-Z_]*$')
 
+    @staticmethod
+    def _has_init(abspath, rootpath):
+        subdirs = os.path.relpath(abspath, rootpath).split(os.path.sep)[:-1]
+        while subdirs:
+            initpath = os.path.join(
+                os.path.join(rootpath, *subdirs), '__init__.py')
+            if not os.path.exists(initpath):
+                return False
+            subdirs.pop()
+        return True
+
     @classmethod
     def _is_vaild_root(cls, abspath, rootpath):
         """
@@ -75,7 +86,8 @@ class ImportFileMagic(Magics):
         """
         test = cls._valid_module_re.match
         subdirs = os.path.relpath(abspath, rootpath).split(os.path.sep)[:-1]
-        return all(test(d) for d in subdirs)
+        return (all(test(d) for d in subdirs) and
+                cls._has_init(abspath, rootpath))
 
     @classmethod
     def _method_sys_path(cls, abspath):
@@ -91,12 +103,6 @@ class ImportFileMagic(Magics):
         cwd = os.getcwd()
         if not abspath.startswith(cwd):
             return
-        subdirs = os.path.relpath(abspath, cwd).split(os.path.sep)
-        while subdirs:
-            if not os.path.exists(
-                    os.path.join(os.path.join(cwd, *subdirs), '__init__.py')):
-                return
-            subdirs.pop()
         if cls._is_vaild_root(abspath, cwd):
             return cwd
 
