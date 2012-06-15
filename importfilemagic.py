@@ -103,12 +103,18 @@ class ImportFileMagic(Magics):
     @classmethod
     def _method_setup_py(cls, abspath):
         dirs = abspath.split(os.path.sep)
+        matches = []
         while len(dirs) > 1:
             dirs.pop()
             rootpath = os.path.sep.join(dirs)
             if (os.path.exists(os.path.join(rootpath, 'setup.py')) and
                 cls._is_vaild_root(abspath, rootpath)):
-                return rootpath
+                matches.append(rootpath)
+        if matches:
+            # Returning shortest path make sense since some project
+            # has "sub" setup.py in its package and the real setup.py
+            # in its root directory.
+            return sorted(matches)[0]  # shortest match
 
     _method_stand_alone = staticmethod(os.path.dirname)
 
