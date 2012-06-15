@@ -74,8 +74,8 @@ class ImportFileMagic(Magics):
         Test if relpath of `abspath` from `rootpath` is a valid module path.
         """
         test = cls._valid_module_re.match
-        return all(test(d) for d in
-                   os.path.relpath(abspath, rootpath).split(os.path.sep))
+        subdirs = os.path.relpath(abspath, rootpath).split(os.path.sep)[:-1]
+        return all(test(d) for d in subdirs)
 
     @classmethod
     def _method_sys_path(cls, abspath):
