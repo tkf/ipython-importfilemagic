@@ -19,6 +19,9 @@ class ImportFileMagic(Magics):
               help='do "from modeule import *"')
     @argument('--verbose', '-v', default=False, action='store_true',
               help='print the commands to be executed')
+    @argument('--import', '-i', default=None, nargs='+',
+              metavar="name", dest="names",
+              help='do "from modeule import name[, name...]"')
     @line_magic
     def importfile(self, parameter_s=''):
         """
@@ -57,8 +60,13 @@ class ImportFileMagic(Magics):
         commands = ["import {0}".format(modulepath)]
         if args.reload:
             commands.append("reload({0})".format(modulepath))
+
         if args.star:
             commands.append("from {0} import *".format(modulepath))
+        elif args.names:
+            commands.append("from {0} import {1}".format(
+                modulepath, ", ".join(args.names)))
+
         code = "\n".join(commands)
         if args.verbose:
             print code
