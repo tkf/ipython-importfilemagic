@@ -90,8 +90,9 @@ class ImportFileMagic(Magics):
     @classmethod
     def _is_valid_module_path(cls, abspath, rootpath):
         test = cls._valid_module_re.match
-        subdirs = os.path.relpath(abspath, rootpath).split(os.path.sep)[:-1]
-        return all(test(d) for d in subdirs)
+        subpaths = os.path.splitext(
+            os.path.relpath(abspath, rootpath))[0].split(os.path.sep)
+        return all(test(p) for p in subpaths)
 
     @classmethod
     def _is_vaild_root(cls, abspath, rootpath):
