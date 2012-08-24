@@ -88,13 +88,17 @@ class ImportFileMagic(Magics):
         return True
 
     @classmethod
+    def _is_valid_module_path(cls, abspath, rootpath):
+        test = cls._valid_module_re.match
+        subdirs = os.path.relpath(abspath, rootpath).split(os.path.sep)[:-1]
+        return all(test(d) for d in subdirs)
+
+    @classmethod
     def _is_vaild_root(cls, abspath, rootpath):
         """
         Test if relpath of `abspath` from `rootpath` is a valid module path.
         """
-        test = cls._valid_module_re.match
-        subdirs = os.path.relpath(abspath, rootpath).split(os.path.sep)[:-1]
-        return (all(test(d) for d in subdirs) and
+        return (cls._is_valid_module_path(abspath, rootpath) and
                 cls._has_init(abspath, rootpath))
 
     @classmethod
