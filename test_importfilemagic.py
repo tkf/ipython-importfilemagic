@@ -37,5 +37,11 @@ def test_is_valid_module_path():
                     ]:
         yield (check_is_valid_module_path, subdirs)
 
-    for subdirs in [['invalid.directory.name', 'module.py']]:
+    for subdirs in [['invalid.module.name.py'],
+                    ['invalid-module-name.py'],
+                    ['invalid.directory.name', 'module.py'],
+                    ['invalid-directory-name', 'module.py'],
+                    ['valid_directory_name', 'invalid.module.name.py'],
+                    ['valid_directory_name', 'invalid-module-name.py'],
+                    ]:
         yield (check_is_valid_module_path_fail, subdirs)
