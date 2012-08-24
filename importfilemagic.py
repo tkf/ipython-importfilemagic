@@ -39,8 +39,10 @@ class ImportFileMagic(Magics):
         3. If there is `setup.py` in one of the parent directory of
            the given file, the file is imported as a module in a
            package located at the location where `setup.py` is.
-        4. If none of above matches, the file is imported as a stand
-           alone module.
+        4. If file is a valid python module name, the file is imported
+           as a stand alone module.
+        5. If none of above matches, the file is imported using
+           '%run -n' magic command.
 
         """
         args = parse_argstring(self.importfile, parameter_s)
@@ -53,6 +55,12 @@ class ImportFileMagic(Magics):
             rootpath = method(abspath)
             if rootpath:
                 break
+        else:
+            # Given path is not a valid module path.  Use %run -n.
+            if args.verbose:
+                print "%run -n {0}".format(args.path)
+            self.shell.run_line_magic('run', "-n {0}".format(args.path))
+            return
 
         modulepath = '.'.join(
             os.path.relpath(os.path.splitext(abspath)[0], rootpath)
@@ -135,7 +143,10 @@ class ImportFileMagic(Magics):
             # in its root directory.
             return sorted(matches)[0]  # shortest match
 
-    _method_stand_alone = staticmethod(os.path.dirname)
+    @classmethod
+    def _method_stand_alone(cls, abspath):
+        if cls._valid_module_re.match(os.path.basename(abspath)):
+            return os.path.dirname(abspath)
 
 
 def load_ipython_extension(ip):
