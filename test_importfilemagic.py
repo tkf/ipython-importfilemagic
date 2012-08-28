@@ -45,3 +45,13 @@ def test_is_valid_module_path():
                     ['valid_directory_name', 'invalid-module-name.py'],
                     ]:
         yield (check_is_valid_module_path_fail, subdirs)
+
+
+def test_method_stand_alone():
+    rootpath = os.path.join(VALID_ABSPATH, 'root')
+
+    abspath = os.path.join(rootpath, 'valid_module.py')
+    eq_(ImportFileMagic._method_stand_alone(abspath), rootpath)
+
+    abspath = os.path.join(rootpath, 'invalid.module.name.py')
+    eq_(ImportFileMagic._method_stand_alone(abspath), None)
