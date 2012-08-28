@@ -145,7 +145,8 @@ class ImportFileMagic(Magics):
 
     @classmethod
     def _method_stand_alone(cls, abspath):
-        if cls._valid_module_re.match(os.path.basename(abspath)):
+        if cls._valid_module_re.match(
+                os.path.splitext(os.path.basename(abspath))[0]):
             return os.path.dirname(abspath)
 
 
