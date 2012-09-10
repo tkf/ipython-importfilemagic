@@ -20,6 +20,7 @@ def test_construct_modulepath():
     for (filepath, modulepath) in [
             (os.path.join('a', 'b', 'c.py'), 'a.b.c'),
             (os.path.join('a.py'), 'a'),
+            (os.path.join('a', 'b', '__init__.py'), 'a.b'),
             ]:
         yield (check_construct_modulepath, filepath, modulepath)
 
