@@ -62,9 +62,7 @@ class ImportFileMagic(Magics):
             self.shell.run_line_magic('run', "-n {0}".format(args.path))
             return
 
-        modulepath = '.'.join(
-            os.path.relpath(os.path.splitext(abspath)[0], rootpath)
-            .split(os.path.sep))
+        modulepath = self._construct_modulepath(abspath, rootpath)
         commands = ["import {0}".format(modulepath)]
         if args.reload:
             commands.append("reload({0})".format(modulepath))
@@ -81,6 +79,11 @@ class ImportFileMagic(Magics):
 
         with prepended_to_syspath(rootpath):
             self.shell.ex(code)
+
+    @staticmethod
+    def _construct_modulepath(abspath, rootpath):
+        return '.'.join(os.path.relpath(os.path.splitext(abspath)[0], rootpath)
+                        .split(os.path.sep))
 
     _valid_module_re = re.compile(r'^[a-zA-z_][0-9a-zA-Z_]*$')
 
