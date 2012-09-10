@@ -82,8 +82,11 @@ class ImportFileMagic(Magics):
 
     @staticmethod
     def _construct_modulepath(abspath, rootpath):
-        return '.'.join(os.path.relpath(os.path.splitext(abspath)[0], rootpath)
-                        .split(os.path.sep))
+        submods = os.path.relpath(
+            os.path.splitext(abspath)[0], rootpath).split(os.path.sep)
+        if submods[-1] == '__init__' and len(submods) > 1:
+            submods = submods[:-1]
+        return '.'.join(submods)
 
     _valid_module_re = re.compile(r'^[a-zA-z_][0-9a-zA-Z_]*$')
 
