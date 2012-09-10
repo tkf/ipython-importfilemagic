@@ -9,6 +9,21 @@ from importfilemagic import ImportFileMagic
 VALID_ABSPATH = tempfile.gettempdir()
 
 
+def check_construct_modulepath(filepath, modulepath):
+    rootpath = os.path.join(VALID_ABSPATH, 'root')
+    abspath = os.path.join(rootpath, filepath)
+    made = ImportFileMagic._construct_modulepath(abspath, rootpath)
+    eq_(made, modulepath)
+
+
+def test_construct_modulepath():
+    for (filepath, modulepath) in [
+            (os.path.join('a', 'b', 'c.py'), 'a.b.c'),
+            (os.path.join('a.py'), 'a'),
+            ]:
+        yield (check_construct_modulepath, filepath, modulepath)
+
+
 def test_has_init():
     rootpath = os.path.join(VALID_ABSPATH, 'root')
     abspath = os.path.join(rootpath, 'a', 'b', 'c.py')
